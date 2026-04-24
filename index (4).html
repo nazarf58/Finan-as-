@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ND PRO SYSTEM | Nazael Diniz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --cyan: #00f2ff; --rose: #ff2e63; --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #c9d1d9; --success: #238636; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+
+        /* Auth */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 350px; background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .auth-toggle { font-size: 0.75rem; color: var(--cyan); cursor: pointer; margin-top: 15px; display: block; opacity: 0.8; }
+
+        /* App Layout */
+        .app-shell { width: 100%; max-width: 500px; display: none; flex-direction: column; border-left: 1px solid var(--border); border-right: 1px solid var(--border); background: var(--bg); position: relative; }
+        header { padding: 15px 20px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { background: #21262d; border: 1px solid var(--border); color: var(--rose); padding: 6px 12px; border-radius: 6px; font-size: 0.65rem; cursor: pointer; font-weight: 800; }
+
+        .nav-tabs { display: flex; background: #0d1117; border-bottom: 1px solid var(--border); }
+        .tab-btn { flex: 1; padding: 15px 0; border: none; background: none; color: #8b949e; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: var(--cyan); border-bottom: 2px solid var(--cyan); background: rgba(0,242,255,0.03); }
+
+        .main-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 110px; scrollbar-width: none; }
+        .card { background: var(--card); border-radius: 12px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .pane { display: none; } .pane.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        input, select, textarea { width: 100%; padding: 12px; background: #0d1117; border: 1px solid var(--border); border-radius: 6px; color: #fff; outline: none; margin-bottom: 12px; font-size: 0.9rem; }
+        .btn { width: 100%; padding: 14px; border-radius: 6px; border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-cyan { background: var(--cyan); color: #0d1117; }
+        
+        /* Stock Buttons */
+        .stock-ctrl { display: flex; align-items: center; gap: 15px; background: #0d1117; padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border); }
+        .btn-qty { background: none; border: none; color: var(--cyan); font-size: 1.2rem; cursor: pointer; padding: 0 5px; }
+
+        /* Meta Styles */
+        .meta-img-preview { width: 100%; height: 120px; border-radius: 8px; object-fit: cover; margin-bottom: 10px; border: 1px solid var(--border); display: none; }
+        .prog-container { height: 8px; background: #21262d; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .prog-bar { height: 100%; background: var(--cyan); transition: width 0.5s ease; }
+        
+        /* Floating WhatsApp */
+        .wa-container { position: fixed; bottom: 85px; right: 20px; display: flex; align-items: center; gap: 10px; z-index: 99; text-decoration: none; }
+        .wa-label { background: #25d366; color: #000; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .wa-float { background: #25d366; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+
+        footer { padding: 15px; text-align: center; font-size: 0.6rem; opacity: 0.5; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h2 id="auth-title" style="color:var(--cyan); margin-bottom:20px; letter-spacing:2px">ND PRO SYSTEM</h2>
+            <input type="email" id="auth-email" placeholder="E-mail profissional">
+            <input type="password" id="auth-pass" placeholder="Senha de acesso">
+            <button class="btn btn-cyan" onclick="handleAuth()">Acessar</button>
+            <span class="auth-toggle" onclick="toggleAuthMode()">Novo aqui? Criar conta de desenvolvedor</span>
+        </div>
+        <footer style="margin-top: 20px;">Nazael Diniz Alves Primo Giblin</footer>
+    </div>
+
+    <div class="app-shell" id="app-shell">
+        <header>
+            <div style="text-align:left">
+                <div style="font-weight:800; color:var(--cyan); font-size: 0.8rem;">ND PRO CORE</div>
+                <div id="user-display" style="font-size:0.5rem; opacity:0.5"></div>
+            </div>
+            <button class="logout-btn" onclick="location.reload()">SAIR</button>
+        </header>
+
+        <div style="text-align:center; padding:25px; border-bottom: 1px solid var(--border)">
+            <small style="color:var(--cyan); font-size:0.6rem; letter-spacing:2px; font-weight:800">SALDO LÍQUIDO</small>
+            <h1 id="display-saldo" style="font-size:2.8rem; font-weight:300; color:#fff">R$ 0,00</h1>
+        </div>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('pane-caixa')">CAIXA</button>
+            <button class="tab-btn" onclick="showTab('pane-metas')">METAS</button>
+            <button class="tab-btn" onclick="showTab('pane-estoque')">STOCK</button>
+            <button class="tab-btn" onclick="showTab('pane-notas')">NOTAS</button>
+        </nav>
+
+        <main class="main-content">
+            <div id="pane-caixa" class="pane active">
+                <div class="card">
+                    <select id="cx-tipo" onchange="toggleMotivo()">
+                        <option value="in">Depósito (+)</option>
+                        <option value="out">Retirada (-)</option>
+                    </select>
+                    <input type="number" id="cx-valor" placeholder="Valor do aporte">
+                    <div id="motivo-container" style="display:none">
+                        <input type="text" id="cx-motivo" placeholder="Motivo da saída">
+                    </div>
+                    <button class="btn btn-cyan" onclick="addMovimentacao()">Executar Operação</button>
+                </div>
+                <div id="hist-list"></div>
+            </div>
+
+            <div id="pane-metas" class="pane">
+                <div class="card">
+                    <input type="text" id="mt-nome" placeholder="Título da Meta">
+                    <input type="number" id="mt-alvo" placeholder="Valor Objetivo">
+                    <label style="font-size:0.6rem; color:var(--cyan); display:block; margin-bottom:5px">FOTO DA META (OPCIONAL)</label>
+                    <input type="file" id="mt-foto" accept="image/*" style="font-size:0.7rem">
+                    <button class="btn btn-cyan" onclick="addMeta()">Lançar Meta</button>
+                </div>
+                <div id="metas-list"></div>
+            </div>
+
+            <div id="pane-estoque" class="pane">
+                <div class="card">
+                    <input type="text" id="st-nome" placeholder="Nome do Produto">
+                    <input type="number" id="st-qtd" placeholder="Qtd Inicial">
+                    <button class="btn btn-cyan" onclick="addStock()">Cadastrar Item</button>
+                </div>
+                <div id="stock-list"></div>
+            </div>
+
+            <div id="pane-notas" class="pane">
+                <div class="card">
+                    <input type="hidden" id="edit-id">
+                    <input type="text" id="nt-titulo" placeholder="Título da Nota">
+                    <textarea id="nt-corpo" rows="4" placeholder="Conteúdo..."></textarea>
+                    <button class="btn btn-cyan" onclick="saveNota()">Salvar Registro</button>
+                </div>
+                <div id="notas-list"></div>
+            </div>
+        </main>
+
+        <a href="https://wa.me/244923002202?text=Olá%20boa%20tarde%20sr%20Nazael%20gostaria%20de%20solicitar%20o%20seu%20trabalho%20soube%20que%20o%20sr%20é%20desenvolvedor" target="_blank" class="wa-container">
+            <span class="wa-label">Falar com o desenvolvedor Nazael</span>
+            <div class="wa-float"><i class="fab fa-whatsapp"></i></div>
+        </a>
+    </div>
+
+    <script>
+        let isLoginMode = true;
+        let currentUser = null;
+        let db = { saldo: 0, historico: [], metas: [], estoque: [], notas: [] };
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "ND PRO LOGIN" : "NOVO REGISTRO";
+            document.getElementById('auth-toggle').innerText = isLoginMode ? "Novo aqui? Criar conta de desenvolvedor" : "Já possui acesso? Entrar";
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('auth-email').value.trim().toLowerCase();
+            const pass = document.getElementById('auth-pass').value.trim();
+            if(!email || !pass) return alert("Campos obrigatórios.");
+
+            let users = JSON.parse(localStorage.getItem('nd_v11_users') || "{}");
+
+            if(isLoginMode) {
+                if(users[email] && users[email].password === pass) {
+                    currentUser = email;
+                    db = users[email].data;
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('app-shell').style.display = 'flex';
+                    document.getElementById('user-display').innerText = email;
+                    renderAll();
+                } else { alert("Acesso negado."); }
+            } else {
+                if(users[email]) return alert("Usuário já existe.");
+                users[email] = { password: pass, data: { saldo: 0, historico: [], metas: [], estoque: [], notas: [] } };
+                localStorage.setItem('nd_v11_users', JSON.stringify(users));
+                alert("Cadastrado! Faça o login.");
+                toggleAuthMode();
+            }
+        }
+
+        function sync() {
+            let users = JSON.parse(localStorage.getItem('nd_v11_users'));
+            users[currentUser].data = db;
+            localStorage.setItem('nd_v11_users', JSON.stringify(users));
+            renderAll();
+        }
+
+        function showTab(id) {
+            document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function toggleMotivo() {
+            document.getElementById('motivo-container').style.display = (document.getElementById('cx-tipo').value === 'out') ? 'block' : 'none';
+        }
+
+        function addMovimentacao() {
+            const val = parseFloat(document.getElementById('cx-valor').value);
+            const tipo = document.getElementById('cx-tipo').value;
+            let mot = document.getElementById('cx-motivo').value;
+
+            if(!val || val <= 0) return;
+            if(tipo === 'out') {
+                if(val > db.saldo) return alert("Não foi possível retirar esse valor.");
+                db.saldo -= val;
+            } else {
+                db.saldo += val;
+                mot = "Aporte de Capital";
+            }
+            db.historico.unshift({ id: Date.now(), val, mot, tipo });
+            document.getElementById('cx-valor').value = "";
+            sync();
+        }
+
+        // --- LÓGICA DE METAS COM FOTO ---
+        async function addMeta() {
+            const n = document.getElementById('mt-nome').value;
+            const a = parseFloat(document.getElementById('mt-alvo').value);
+            const file = document.getElementById('mt-foto').files[0];
+            let imgBase64 = "";
+
+            if(file) {
+                imgBase64 = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = () => r(reader.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if(n && a) {
+                db.metas.push({ id: Date.now(), nome: n, alvo: a, atual: 0, foto: imgBase64 });
+                document.getElementById('mt-nome').value = "";
+                document.getElementById('mt-alvo').value = "";
+                document.getElementById('mt-foto').value = "";
+                sync();
+            }
+        }
+
+        function depMeta(id) {
+            const m = db.metas.find(x => x.id === id);
+            const v = parseFloat(prompt(`Quanto retirar do saldo para "${m.nome}"?`));
+            if(v > db.saldo) return alert("Saldo insuficiente.");
+            if(v > 0) {
+                db.saldo -= v;
+                m.atual += v;
+                sync();
+            }
+        }
+
+        // --- LÓGICA DE ESTOQUE ---
+        function addStock() {
+            const n = document.getElementById('st-nome').value;
+            const q = parseInt(document.getElementById('st-qtd').value);
+            if(n) { db.estoque.push({ id: Date.now(), nome: n, qtd: q }); sync(); }
+        }
+
+        function stockQty(id, d) {
+            const i = db.estoque.find(x => x.id === id);
+            i.qtd = Math.max(0, i.qtd + d);
+            sync();
+        }
+
+        function saveNota() {
+            const tit = document.getElementById('nt-titulo').value;
+            const cor = document.getElementById('nt-corpo').value;
+            if(!tit || !cor) return;
+            db.notas.unshift({ id: Date.now(), titulo: tit, corpo: cor });
+            sync();
+        }
+
+        function del(lista, id) { if(confirm("Apagar permanentemente?")) { db[lista] = db[lista].filter(x => x.id !== id); sync(); } }
+
+        function renderAll() {
+            document.getElementById('display-saldo').innerText = db.saldo.toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+            
+            // Render Metas
+            document.getElementById('metas-list').innerHTML = db.metas.map(m => {
+                const falta = m.alvo - m.atual;
+                const perc = Math.min(100, (m.atual / m.alvo) * 100);
+                return `
+                <div class="card">
+                    ${m.foto ? `<img src="${m.foto}" class="meta-img-preview" style="display:block">` : ''}
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem">
+                        <b>${m.nome}</b>
+                        <span style="color:var(--cyan)">${perc.toFixed(1)}%</span>
+                    </div>
+                    <div class="prog-container"><div class="prog-bar" style="width:${perc}%"></div></div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; opacity:0.6; margin-bottom:12px">
+                        <span>Falta: R$ ${falta > 0 ? falta.toFixed(2) : '0,00'}</span>
+                        <span>Alvo: R$ ${m.alvo.toFixed(2)}</span>
+                    </div>
+                    <div style="display:flex; gap:10px">
+                        <button class="btn btn-cyan" style="padding:8px; font-size:0.65rem" onclick="depMeta(${m.id})">ADICIONAR FUNDOS</button>
+                        <button class="btn" style="padding:8px; font-size:0.65rem; background:#21262d; color:#fff" onclick="del('metas',${m.id})">DELETAR</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Render Estoque
+            document.getElementById('stock-list').innerHTML = db.estoque.map(s => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center">
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600">${s.nome}</div>
+                        <small style="opacity:0.5; font-size:0.6rem">STATUS: ${s.qtd > 0 ? 'EM STOCK' : 'ESGOTADO'}</small>
+                    </div>
+                    <div class="stock-ctrl">
+                        <button class="btn-qty" onclick="stockQty(${s.id},-1)">-</button>
+                        <span style="font-weight:800; min-width:30px; text-align:center">${s.qtd}</span>
+                        <button class="btn-qty" onclick="stockQty(${s.id},1)">+</button>
+                        <i class="fas fa-trash-alt" style="color:var(--rose); margin-left:10px; cursor:pointer" onclick="del('estoque',${s.id})"></i>
+                    </div>
+                </div>`).join('');
+
+            // Render Histórico e Notas
+            document.getElementById('hist-list').innerHTML = db.historico.map(h => `
+                <div class="hist-item">
+                    <div><b class="${h.tipo === 'in' ? 'val-in' : 'val-out'}">${h.tipo === 'in' ? '+' : '-'} R$ ${h.val.toFixed(2)}</b><br><small style="opacity:0.4">${h.mot}</small></div>
+                    <i class="fas fa-times" onclick="del('historico',${h.id})" style="cursor:pointer; opacity:0.3"></i>
+                </div>`).join('');
+
+            document.getElementById('notas-list').innerHTML = db.notas.map(n => `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between"><b>${n.titulo}</b><i class="fas fa-trash" onclick="del('notas',${n.id})" style="color:var(--rose)"></i></div>
+                    <p style="font-size:0.8rem; opacity:0.7; margin-top:8px">${n.corpo}</p>
+                </div>`).join('');
+        }
+    </script>
+</body>
+</html>
